@@ -62,7 +62,7 @@ insert into settings(key, value) values
   ('vat_rate',         '21'),
   ('accent',           '"#FFB000"'),
   ('notify_email',     '"info@thelightportraits.nl"'),
-  ('business',         '{"name":"Crafted By The Light (The Light Portraits)","address":"Mergelweg 221, 6212 XE Maastricht","email":"info@thelightportraits.nl","phone":"06 39 85 52 53","kvk":"","vat_id":""}'),
+  ('business',         '{"name":"Crafted By The Light (The Light Portraits)","address":"Mergelweg 221, 6212 XE Maastricht","email":"info@thelightportraits.nl","phone":"06 39 85 52 53","kvk":"81988907","vat_id":"NL003629651B98"}'),
   ('announcement',     '"Jouw naam erop ✦ Jouw kleur ✦ Verzending NL & BE ✦ iDEAL & Bancontact ✦ Gemaakt in Maastricht ✦"')
 on conflict (key) do nothing;
 
