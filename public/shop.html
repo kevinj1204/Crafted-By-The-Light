@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shop – Crafted By The Light</title>
+<meta name="theme-color" content="#06060A">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<main class="wrap" style="padding-top:48px">
+  <div class="section-head">
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <p class="eyebrow">Alle prints</p>
+      <h1 class="display" style="font-size:clamp(44px,7vw,88px)">De shop</h1>
+    </div>
+  </div>
+  <div class="filters" id="filters" role="group" aria-label="Filter"></div>
+  <div class="products" id="list"><div class="empty">Producten laden…</div></div>
+</main>
+<script src="/common.js"></script>
+<script>
+CB.chrome('/shop');
+const params = new URLSearchParams(location.search);
+let all = [], filter = params.get('f') || 'alles';
+function render() {
+  const cats = [...new Set(all.map((p) => p.category).filter(Boolean))];
+  const opts = [['alles', 'Alles'], ['naam', 'Met jouw naam'], ...cats.map((c) => ['c:' + c, c])];
+  const el = document.getElementById('filters');
+  el.innerHTML = opts.map(([k, l]) => `<button type="button" data-f="${CB.esc(k)}" aria-pressed="${k === filter}">${CB.esc(l)}</button>`).join('');
+  el.querySelectorAll('button').forEach((b) => b.onclick = () => {
+    filter = b.dataset.f;
+    history.replaceState(null, '', filter === 'alles' ? '/shop' : '/shop?f=' + encodeURIComponent(filter));
+    render();
+  });
+  const shown = all.filter((p) => filter === 'alles' || (filter === 'naam' ? p.fields.length > 0 : p.category === filter.slice(2)));
+  document.getElementById('list').innerHTML = shown.length ? shown.map(CB.productCard).join('')
+    : '<div class="empty">Hier staat nog niets. Kijk snel weer!</div>';
+}
+CB.api('/api/public').then(({ settings, products }) => { CB.applySettings(settings); all = products; render(); })
+  .catch((e) => { document.getElementById('list').innerHTML = `<div class="empty">${CB.esc(e.message)}</div>`; });
+</script>
+</body>
+</html>

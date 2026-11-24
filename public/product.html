@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Crafted By The Light</title>
+<meta name="theme-color" content="#06060A">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<main class="wrap">
+  <p style="margin:24px 0 0;font-size:14px"><a href="/shop" class="muted" style="text-decoration:none">← Terug naar de shop</a></p>
+  <div id="root"><div class="empty" style="margin-top:32px">Laden…</div></div>
+</main>
+<script src="/common.js"></script>
+<script>
+CB.chrome('/shop');
+const { esc, euro } = CB;
+const slug = decodeURIComponent(location.pathname.split('/p/')[1] || new URLSearchParams(location.search).get('slug') || '');
+let p, st = { variant: null, color: null, personal: {}, qty: 1, photo: 0 };
+
+function variant() { return p.variants.find((v) => v.id === st.variant); }
+function glow() { return (p.colors.find((c) => c.name === st.color) || {}).hex || p.glow; }
+
+function delivery(v) {
+  if (!v) return '';
+  if (!v.available) return '<strong>Uitverkocht.</strong> Deze uitvoering is tijdelijk niet leverbaar.';
+  if (v.stock_mode === 'stock') return `<strong>Op voorraad</strong>${v.stock <= 3 ? ` (nog ${v.stock})` : ''} · verzonden binnen ${esc(v.lead_time)}.`;
+  return `<strong>Wordt speciaal voor jou geprint</strong>${v.lead_time ? ` · levertijd ${esc(v.lead_time)}` : ''}.`;
+}
+
+function render() {
+  const v = variant();
+  const g = glow();
+  const shape = CB.shapeFor(p.slug, false);
+  const firstText = p.fields.map((f) => st.personal[f.id]).find(Boolean) || '';
+  const photo = p.photos[st.photo];
+  const missing = p.fields.filter((f) => f.required && !String(st.personal[f.id] || '').trim());
+  const canBuy = v && v.available && (!p.colors.length || st.color) && !missing.length;
+  document.getElementById('root').innerHTML = `
+  <div class="pdp" style="--c:${esc(g)}">
+    <div class="gallery">
+      <div class="main">
+        ${photo ? `<img src="${esc(photo)}" alt="${esc(p.name)}">` : CB.layers(shape.n, shape.base, shape.amp, shape.f, { build: true }) }
+        ${firstText ? `<div class="live" style="font-size:${firstText.length > 9 ? 40 : 64}px">${esc(firstText)}</div>` : ''}
+      </div>
+      ${p.photos.length > 1 ? `<div class="thumbs">${p.photos.map((u, i) => `<button type="button" data-photo="${i}" aria-pressed="${i === st.photo}" aria-label="Foto ${i + 1}"><img src="${esc(u)}" alt=""></button>`).join('')}</div>` : ''}
+    </div>
+    <div class="buy">
+      ${p.category ? `<p class="eyebrow">${esc(p.category)}</p>` : ''}
+      <h1 class="display">${esc(p.name)}</h1>
+      <div class="price">${v ? euro(v.price_cents) : ''}<span class="muted small" style="font-family:var(--sans);font-weight:400;margin-left:10px">incl. btw</span></div>
+      ${p.description ? `<p class="desc" style="margin:0">${esc(p.description)}</p>` : ''}
+
+      ${p.variants.length > 1 ? `<div style="display:flex;flex-direction:column;gap:10px"><span class="opt-label">Uitvoering</span>
+        <div class="seg">${p.variants.map((x) => `<button type="button" data-variant="${esc(x.id)}" aria-pressed="${x.id === st.variant}"${x.available ? '' : ' disabled'}>${esc(x.name)}<small>${euro(x.price_cents)}${x.available ? '' : ' · uitverkocht'}</small></button>`).join('')}</div></div>` : ''}
+
+      ${p.colors.length ? `<div style="display:flex;flex-direction:column;gap:10px"><span class="opt-label">Kleur · ${esc(st.color || 'kies een kleur')}</span>
+        <div class="swatches">${p.colors.map((c) => `<button type="button" data-color="${esc(c.name)}" aria-label="${esc(c.name)}" aria-pressed="${c.name === st.color}" style="background:${esc(c.hex)};box-shadow:0 0 18px ${esc(c.hex)}66,0 0 0 1px var(--line2)"></button>`).join('')}</div></div>` : ''}
+
+      ${p.fields.map((f) => `<label class="field"><span class="opt-label">${esc(f.label)}${f.required ? ' *' : ' (optioneel)'}</span>
+        <input data-field="${esc(f.id)}" maxlength="${f.max}" value="${esc(st.personal[f.id] || '')}" placeholder="Max. ${f.max} tekens" autocomplete="off"></label>`).join('')}
+
+      <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center">
+        <div class="qty"><button type="button" data-q="-1" aria-label="Minder">−</button><span aria-live="polite">${st.qty}</span><button type="button" data-q="1" aria-label="Meer">+</button></div>
+        <button class="btn primary" id="add" style="flex:1 1 220px"${canBuy ? '' : ' disabled'}>In mijn mand${v ? ' · ' + euro(v.price_cents * st.qty) : ''}</button>
+      </div>
+      <p class="error" id="addMsg" role="status">${!canBuy && v && v.available ? (p.colors.length && !st.color ? 'Kies eerst een kleur.' : missing.length ? `Vul "${esc(missing[0].label)}" in.` : '') : ''}</p>
+      <div class="note">${delivery(v)}</div>
+      ${p.no_return ? `<div class="note">Dit product wordt <strong>speciaal voor jou gepersonaliseerd</strong> en kan daarom niet worden geretourneerd. Controleer je tekst goed.</div>` : ''}
+      <div class="usp"><span>Veilig betalen</span><span>Verzending NL &amp; BE</span><span>Gemaakt in Maastricht</span></div>
+    </div>
+  </div>`;
+
+  const root = document.getElementById('root');
+  root.querySelectorAll('[data-variant]').forEach((b) => b.onclick = () => { st.variant = b.dataset.variant; render(); });
+  root.querySelectorAll('[data-color]').forEach((b) => b.onclick = () => { st.color = b.dataset.color; render(); });
+  root.querySelectorAll('[data-photo]').forEach((b) => b.onclick = () => { st.photo = Number(b.dataset.photo); render(); });
+  root.querySelectorAll('[data-q]').forEach((b) => b.onclick = () => { st.qty = Math.min(20, Math.max(1, st.qty + Number(b.dataset.q))); render(); });
+  root.querySelectorAll('[data-field]').forEach((inp) => {
+    inp.oninput = () => { st.personal[inp.dataset.field] = inp.value; const pos = inp.selectionStart; render();
+      const again = root.querySelector(`[data-field="${inp.dataset.field}"]`); again.focus(); again.setSelectionRange(pos, pos); };
+  });
+  document.getElementById('add').onclick = () => {
+    const personal = Object.fromEntries(Object.entries(st.personal).map(([k, v]) => [k, v.trim()]).filter(([, v]) => v));
+    CB.cart.add({ slug: p.slug, name: p.name, variant_id: st.variant, variant: variant().name, color: st.color, personal,
+      personal_labels: Object.fromEntries(p.fields.map((f) => [f.id, f.label])), qty: st.qty,
+      unit_cents: variant().price_cents, photo: p.photos[0] || null, glow: glow(), no_return: p.no_return });
+    const msg = document.getElementById('addMsg');
+    msg.style.color = 'var(--ok)';
+    msg.innerHTML = 'Toegevoegd aan je mand ✓ <a href="/mand" style="color:var(--c);margin-left:8px">Naar de mand →</a>';
+  };
+}
+
+CB.api('/api/public?slug=' + encodeURIComponent(slug)).then(({ settings, product }) => {
+  CB.applySettings(settings);
+  p = product;
+  document.title = `${p.name} – Crafted By The Light`;
+  st.variant = (p.variants.find((v) => v.available) || p.variants[0] || {}).id || null;
+  if (p.colors.length === 1) st.color = p.colors[0].name;
+  render();
+}).catch((e) => { document.getElementById('root').innerHTML = `<div class="empty" style="margin-top:32px">${CB.esc(e.message)}</div>`; });
+</script>
+</body>
+</html>

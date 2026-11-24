@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Over – Crafted By The Light</title>
+<meta name="theme-color" content="#06060A">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<main class="wrap">
+  <section style="display:flex;flex-wrap:wrap;gap:40px;align-items:center;padding:56px 0 24px">
+    <div style="flex:999 1 480px;display:flex;flex-direction:column;gap:22px">
+      <p class="eyebrow">Over Crafted By The Light</p>
+      <h1 class="display" style="font-size:clamp(44px,7vw,88px)">Gemaakt<br>met <span style="color:var(--c);text-shadow:0 0 40px var(--c)">licht.</span></h1>
+      <p class="muted" style="font-size:18px;line-height:1.7;margin:0;max-width:560px">Crafted By The Light is de 3D-printwerkplaats van The Light Portraits in Maastricht. Waar we normaal met licht foto's en films maken, maken we hier met licht en filament dingen die je kunt vastpakken.</p>
+      <p class="muted" style="font-size:18px;line-height:1.7;margin:0;max-width:560px">Elke print ontstaat laag voor laag, en wordt met de hand gecontroleerd en afgewerkt voordat hij de deur uitgaat. Veel producten maken we pas als jij ze bestelt, in jouw kleur en met jouw naam.</p>
+      <div class="actions"><a class="btn primary" href="/shop">Naar de shop</a><a class="btn" href="mailto:info@thelightportraits.nl">Vraag stellen</a></div>
+    </div>
+    <div style="flex:1 1 320px;display:flex;justify-content:center" id="obj"></div>
+  </section>
+</main>
+<script src="/common.js"></script>
+<script>
+CB.chrome('/over');
+document.getElementById('obj').innerHTML = CB.layers(34, 120, 90, 1.6, { build: true });
+CB.api('/api/public').then((r) => CB.applySettings(r.settings)).catch(() => {});
+</script>
+</body>
+</html>

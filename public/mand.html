@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Je mand – Crafted By The Light</title>
+<meta name="theme-color" content="#06060A">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<main class="wrap" style="padding-top:40px">
+  <h1 class="display" style="font-size:clamp(40px,6vw,72px)">Je mand</h1>
+  <div id="root"><div class="empty" style="margin-top:32px">Laden…</div></div>
+</main>
+<script src="/common.js"></script>
+<script>
+CB.chrome('');
+const { esc, euro } = CB;
+let settings, products = [], country = 'NL', busy = false;
+const form = {};
+
+function lineHtml(i, idx) {
+  const extra = [i.variant !== 'Standaard' ? i.variant : '', i.color,
+    ...Object.entries(i.personal || {}).map(([k, v]) => `${(i.personal_labels || {})[k] || 'Tekst'}: “${v}”`)].filter(Boolean).join(' · ');
+  return `<div class="line" style="--g:${esc(i.glow || 'var(--c)')}">
+    <div class="th">${i.photo ? `<img src="${esc(i.photo)}" alt="">` : CB.layers(10, 26, 20, 1, { small: true, glow: i.glow })}</div>
+    <div class="info"><b>${esc(i.name)}</b><span class="muted small">${esc(extra)}</span>
+      ${i.problem ? `<span class="error">${esc(i.problem)}</span>` : ''}
+      <div style="display:flex;align-items:center;gap:14px;margin-top:6px;flex-wrap:wrap">
+        <div class="qty" style="transform:scale(.85);transform-origin:left"><button type="button" data-q="${idx}:-1" aria-label="Minder">−</button><span>${i.qty}</span><button type="button" data-q="${idx}:1" aria-label="Meer">+</button></div>
+        <strong>${euro(i.unit_cents * i.qty)}</strong></div></div>
+    <button class="x" type="button" data-rm="${idx}" aria-label="Verwijder ${esc(i.name)}">✕</button></div>`;
+}
+
+function render() {
+  const items = CB.cart.get();
+  const root = document.getElementById('root');
+  if (!items.length) {
+    root.innerHTML = `<div class="empty" style="margin-top:32px">Je mand is nog leeg.<br><a class="btn primary" href="/shop" style="margin-top:20px">Naar de shop</a></div>`;
+    return;
+  }
+  const subtotal = items.reduce((s, i) => s + i.unit_cents * i.qty, 0);
+  const ship = settings.shipping[country] || 0;
+  const total = subtotal + ship;
+  const vat = Math.round(total * settings.vat_rate / (100 + settings.vat_rate));
+  const anyNoReturn = items.some((i) => i.no_return);
+  const blocked = items.some((i) => i.problem);
+  const f = (k) => esc(form[k] || '');
+  root.innerHTML = `<div class="cart">
+    <div class="lines">${items.map(lineHtml).join('')}
+      <form id="co" class="card" style="display:flex;flex-direction:column;gap:16px;margin-top:20px" novalidate>
+        <h2 class="display" style="font-size:24px">Verzendgegevens</h2>
+        <div class="grid2">
+          <label class="field">Voornaam<input name="first_name" autocomplete="given-name" required value="${f('first_name')}"></label>
+          <label class="field">Achternaam<input name="last_name" autocomplete="family-name" required value="${f('last_name')}"></label>
+          <label class="field">E-mail<input name="email" type="email" autocomplete="email" required value="${f('email')}"></label>
+          <label class="field">Telefoon (optioneel)<input name="phone" type="tel" autocomplete="tel" value="${f('phone')}"></label>
+        </div>
+        <label class="field">Land<select name="country" autocomplete="country">
+          <option value="NL"${country === 'NL' ? ' selected' : ''}>Nederland · verzending ${euro(settings.shipping.NL)}</option>
+          <option value="BE"${country === 'BE' ? ' selected' : ''}>België · verzending ${euro(settings.shipping.BE)}</option></select></label>
+        <div class="grid2">
+          <label class="field">Straat<input name="street" autocomplete="address-line1" required value="${f('street')}"></label>
+          <label class="field">Huisnummer (+ toevoeging)<input name="house" required value="${f('house')}"></label>
+          <label class="field">Postcode<input name="zip" autocomplete="postal-code" required value="${f('zip')}" placeholder="${country === 'NL' ? '6212 XE' : '3500'}"></label>
+          <label class="field">Plaats<input name="city" autocomplete="address-level2" required value="${f('city')}"></label>
+        </div>
+        <label class="field">Opmerking (optioneel)<textarea name="note" maxlength="500">${f('note')}</textarea></label>
+      </form>
+    </div>
+    <aside class="summary card" aria-label="Overzicht">
+      <h2 class="display" style="font-size:24px">Overzicht</h2>
+      <div class="sumrow"><span>Subtotaal</span><span>${euro(subtotal)}</span></div>
+      <div class="sumrow"><span>Verzending ${country === 'NL' ? 'Nederland' : 'België'}</span><span>${euro(ship)}</span></div>
+      <div class="sumrow total"><span>Totaal</span><span>${euro(total)}</span></div>
+      <div class="sumrow small"><span>Waarvan ${settings.vat_rate}% btw</span><span>${euro(vat)}</span></div>
+      <label class="check"><input type="checkbox" id="terms"${form.terms ? ' checked' : ''}> <span>Ik ga akkoord met de <a href="/voorwaarden" target="_blank" style="color:var(--c)">algemene voorwaarden</a> en de <a href="/privacy" target="_blank" style="color:var(--c)">privacyverklaring</a>.</span></label>
+      ${anyNoReturn ? `<label class="check"><input type="checkbox" id="noret"${form.noret ? ' checked' : ''}> <span>Ik begrijp dat <strong style="color:var(--text)">gepersonaliseerde producten</strong> speciaal voor mij worden gemaakt en <strong style="color:var(--text)">niet geretourneerd</strong> kunnen worden. Mijn tekst is correct.</span></label>` : ''}
+      <p class="error" id="err" role="alert"></p>
+      <button class="btn primary block" id="pay"${blocked || busy ? ' disabled' : ''}>${busy ? 'Even geduld…' : 'Afrekenen · ' + euro(total)}</button>
+      <div class="paylogos"><span>iDEAL</span><span>Bancontact</span><span>Creditcard</span><span>Veilig via Mollie</span></div>
+    </aside></div>`;
+
+  root.querySelectorAll('[data-q]').forEach((b) => b.onclick = () => {
+    const [i, d] = b.dataset.q.split(':').map(Number); const list = CB.cart.get();
+    list[i].qty = Math.min(20, Math.max(1, list[i].qty + d)); CB.cart.set(list); validate(); render();
+  });
+  root.querySelectorAll('[data-rm]').forEach((b) => b.onclick = () => {
+    const list = CB.cart.get(); list.splice(Number(b.dataset.rm), 1); CB.cart.set(list); validate(); render();
+  });
+  const co = document.getElementById('co');
+  co.addEventListener('input', (e) => { if (e.target.name) form[e.target.name] = e.target.value; });
+  co.country.onchange = () => { country = co.country.value; form.country = country; render(); };
+  document.getElementById('terms').onchange = (e) => { form.terms = e.target.checked; };
+  const nr = document.getElementById('noret'); if (nr) nr.onchange = (e) => { form.noret = e.target.checked; };
+  document.getElementById('pay').onclick = pay;
+}
+
+// Prijzen en beschikbaarheid in de mand bijwerken met de actuele shopgegevens.
+function validate() {
+  const list = CB.cart.get();
+  for (const i of list) {
+    const p = products.find((x) => x.slug === i.slug);
+    const v = p && p.variants.find((x) => x.id === i.variant_id);
+    i.problem = !p ? 'Niet meer beschikbaar, verwijder deze regel.'
+      : !v || !v.available ? 'Uitverkocht, verwijder deze regel.'
+      : v.stock_mode === 'stock' && i.qty > v.stock ? `Nog maar ${v.stock} op voorraad.` : '';
+    if (v) i.unit_cents = v.price_cents;
+    if (p) i.no_return = p.no_return;
+  }
+  CB.cart.set(list);
+}
+
+async function pay() {
+  const err = document.getElementById('err');
+  err.textContent = '';
+  const co = document.getElementById('co');
+  const fd = Object.fromEntries(new FormData(co));
+  const bad = [...co.querySelectorAll('[required]')].find((el) => !el.value.trim());
+  if (bad) { err.textContent = 'Vul alle verplichte velden in.'; bad.focus(); return; }
+  if (!document.getElementById('terms').checked) { err.textContent = 'Ga akkoord met de algemene voorwaarden.'; return; }
+  const nr = document.getElementById('noret');
+  if (nr && !nr.checked) { err.textContent = 'Bevestig dat gepersonaliseerde producten niet retour kunnen.'; return; }
+  busy = true; document.getElementById('pay').disabled = true; document.getElementById('pay').textContent = 'Even geduld…';
+  try {
+    const items = CB.cart.get().map(({ slug, variant_id, color, personal, qty }) => ({ slug, variant_id, color, personal, qty }));
+    const r = await CB.api('/api/checkout', { method: 'POST', body: JSON.stringify({
+      items, customer: { ...fd, country }, accept_terms: true, accept_no_return: !!(nr && nr.checked) }) });
+    location.href = r.checkoutUrl;
+  } catch (e) {
+    busy = false; render(); document.getElementById('err').textContent = e.message;
+  }
+}
+
+CB.api('/api/public').then((r) => {
+  settings = r.settings; products = r.products; CB.applySettings(settings);
+  if (!settings.shop_open) { document.getElementById('root').innerHTML = '<div class="empty" style="margin-top:32px">De shop is tijdelijk gesloten. Probeer het later opnieuw.</div>'; return; }
+  validate(); render();
+}).catch((e) => { document.getElementById('root').innerHTML = `<div class="empty" style="margin-top:32px">${esc(e.message)}</div>`; });
+</script>
+</body>
+</html>

@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Crafted By The Light – 3D-prints met jouw naam en kleur</title>
+<meta name="description" content="Unieke 3D-prints uit Maastricht, in jouw kleur en met jouw naam. Verzending naar Nederland en België.">
+<meta name="theme-color" content="#06060A">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<main>
+  <section class="hero">
+    <div class="beam" aria-hidden="true"></div>
+    <div class="wrap">
+      <div class="copy">
+        <p class="eyebrow pulse">● Nu aan het printen · Maastricht</p>
+        <h1 class="display">Licht<br><span class="stroke">wordt</span><br><span class="glow">vorm.</span></h1>
+        <p class="lead">3D-prints die laag voor laag ontstaan, in jouw kleur en met jouw naam. Geen massaproduct, maar iets dat speciaal voor jou van de printer komt.</p>
+        <div class="actions">
+          <a class="btn primary" href="/shop">Ontdek de shop →</a>
+          <a class="btn" href="/shop?f=naam">Zet je naam erop</a>
+        </div>
+      </div>
+      <div class="stage">
+        <div class="halo" aria-hidden="true"></div>
+        <div id="heroObj" role="img" aria-label="Een vaas die laag voor laag wordt opgebouwd" style="position:relative;display:flex;flex-direction:column;align-items:center;padding-bottom:28px"></div>
+        <div class="tag" id="heroTag" hidden></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="band" data-band><div><span>Jouw naam erop ✦ Jouw kleur ✦ Verzending NL &amp; BE ✦ iDEAL &amp; Bancontact ✦ Gemaakt in Maastricht ✦&nbsp;</span><span aria-hidden="true">Jouw naam erop ✦ Jouw kleur ✦ Verzending NL &amp; BE ✦ iDEAL &amp; Bancontact ✦ Gemaakt in Maastricht ✦&nbsp;</span></div></div>
+
+  <section class="section">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 class="display">Vers van<br>de plaat</h2>
+        <a href="/shop" style="color:var(--c)">Alle producten →</a>
+      </div>
+      <div class="products" id="featured"><div class="empty">Producten laden…</div></div>
+    </div>
+  </section>
+
+  <section class="wrap" style="padding-bottom:64px">
+    <div class="card" style="display:flex;flex-wrap:wrap;gap:32px;align-items:center;border-radius:40px;padding:48px;background:radial-gradient(circle at 15% 50%,color-mix(in srgb,var(--c) 16%,transparent),var(--panel2) 60%)">
+      <div style="flex:1 1 420px;display:flex;flex-direction:column;gap:16px">
+        <h2 class="display" style="font-size:clamp(32px,4vw,48px)">Maak hem<br>van jou</h2>
+        <p class="muted" style="margin:0;font-size:17px;line-height:1.6;max-width:480px">Bij veel producten kies je zelf de kleur en het formaat en typ je een naam of tekst. Je ziet meteen hoe hij wordt en wat hij kost. Wij printen hem precies zo.</p>
+      </div>
+      <div style="flex:1 1 300px;display:flex;flex-direction:column;gap:12px">
+        <div class="usp" style="flex-direction:column;font-size:15px;gap:10px"><span>Kies je kleur en formaat</span><span>Typ je naam of tekst</span><span>Betaal veilig met iDEAL, Bancontact of creditcard</span><span>Verzonden naar Nederland en België</span></div>
+        <a class="btn primary" href="/shop?f=naam" style="align-self:flex-start;margin-top:8px">Bekijk personaliseerbare prints</a>
+      </div>
+    </div>
+  </section>
+</main>
+<script src="/common.js"></script>
+<script>
+CB.chrome('/');
+document.getElementById('heroObj').innerHTML = CB.layers(40, 150, 110, 1.15, { build: true }) + '<div class="plate"></div>';
+CB.api('/api/public').then(({ settings, products }) => {
+  CB.applySettings(settings);
+  const list = products.filter((p) => p.featured).concat(products.filter((p) => !p.featured)).slice(0, 6);
+  document.getElementById('featured').innerHTML = list.length ? list.map(CB.productCard).join('')
+    : '<div class="empty">Binnenkort verschijnen hier de eerste prints.</div>';
+  const top = list[0];
+  if (top) {
+    const tag = document.getElementById('heroTag');
+    tag.innerHTML = `<strong>${CB.esc(top.name)}</strong>${top.from_cents != null ? 'Vanaf ' + CB.euro(top.from_cents) + '<br>' : ''}<a href="/p/${encodeURIComponent(top.slug)}" style="color:var(--c)">Bekijken →</a>`;
+    tag.hidden = false;
+  }
+}).catch((e) => { document.getElementById('featured').innerHTML = `<div class="empty">${CB.esc(e.message)}</div>`; });
+</script>
+</body>
+</html>

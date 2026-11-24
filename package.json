@@ -1,0 +1,17 @@
+{
+  "name": "crafted-by-the-light",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Crafted By The Light: webshop voor 3D-prints met Mollie, Supabase en een eigen backoffice.",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "dev": "node test/dev-server.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.0"
+  }
+}

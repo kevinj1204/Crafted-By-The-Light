@@ -1,0 +1,11 @@
+{
+  "regions": ["cdg1"],
+  "outputDirectory": "public",
+  "cleanUrls": true,
+  "rewrites": [
+    { "source": "/p/:slug", "destination": "/product" }
+  ],
+  "headers": [
+    { "source": "/beheer", "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow" }] }
+  ]
+}

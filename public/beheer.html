@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Beheer – Crafted By The Light</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#06060A">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/style.css">
+<style>
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:24px 0}
+.tabs button{min-height:44px;padding:0 18px;border-radius:999px;border:1px solid var(--line2);background:none;cursor:pointer;font-weight:600}
+.tabs button[aria-selected=true]{background:var(--text);color:var(--bg)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:20px}
+.kpi{padding:18px;border-radius:20px;background:var(--panel);border:1px solid var(--line)}
+.kpi b{display:block;font-family:var(--display);font-size:26px;margin-top:4px}
+.olist{display:flex;flex-direction:column;gap:12px}
+.order{padding:18px;border-radius:22px;background:var(--panel);border:1px solid var(--line);display:flex;flex-wrap:wrap;gap:16px}
+.order .l{flex:1 1 340px;min-width:0;display:flex;flex-direction:column;gap:6px}
+.order .r{flex:1 1 280px;display:flex;flex-direction:column;gap:10px}
+.st{display:inline-block;font-size:11px;letter-spacing:.08em;text-transform:uppercase;padding:4px 10px;border-radius:999px;border:1px solid var(--line2);color:var(--muted);margin-right:6px}
+.st.ok{border-color:var(--ok);color:var(--ok)} .st.c{border-color:var(--c);color:var(--c)} .st.err{border-color:var(--err);color:var(--err)}
+.pers{display:inline-block;margin-top:2px;padding:3px 10px;border-radius:8px;background:color-mix(in srgb,var(--c) 15%,transparent);color:var(--text);font-weight:600}
+.prow{display:flex;gap:14px;align-items:center;padding:12px;border-radius:20px;background:var(--panel);border:1px solid var(--line);margin-bottom:10px}
+.prow .th{width:64px;height:64px;border-radius:14px;overflow:hidden;flex:none;background:#0B0B12;display:flex;align-items:center;justify-content:center}
+.prow .th img{width:100%;height:100%;object-fit:cover}
+.prow .i{flex:1;min-width:0}
+.ed{display:flex;flex-direction:column;gap:18px}
+.sub{padding:16px;border-radius:18px;border:1px solid var(--line);background:var(--panel2);display:flex;flex-direction:column;gap:12px}
+.vrow{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,.8fr) minmax(0,1fr) minmax(0,.7fr) minmax(0,1.2fr) 44px;gap:8px;align-items:end}
+.crow{display:grid;grid-template-columns:1fr 64px 44px;gap:8px;align-items:end}
+.frow{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,.6fr) auto 44px;gap:8px;align-items:end}
+@media (max-width:760px){.vrow,.frow{grid-template-columns:1fr 1fr}.vrow .x,.frow .x{grid-column:span 2;width:100%}}
+.sub .field input,.sub .field select{min-height:44px;border-radius:12px;font-size:15px}
+.x{width:44px;height:44px;border-radius:12px;border:1px solid var(--line2);background:none;cursor:pointer}
+.photos{display:flex;flex-wrap:wrap;gap:10px}
+.photos .ph{position:relative;width:96px;height:96px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
+.photos .ph img{width:100%;height:100%;object-fit:cover}
+.photos .ph button{position:absolute;top:4px;right:4px;width:28px;height:28px;border-radius:999px;border:0;background:#06060ACC;color:var(--text);cursor:pointer}
+.photos .ph .mv{left:4px;right:auto}
+.drop{width:96px;height:96px;border-radius:14px;border:1px dashed var(--line2);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted);font-size:13px;text-align:center}
+.switch{display:flex;gap:10px;align-items:center;cursor:pointer;font-size:15px}
+.switch input{width:22px;height:22px;accent-color:var(--c)}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);padding:14px 22px;border-radius:999px;background:var(--text);color:var(--bg);font-weight:600;z-index:50}
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <span class="logo">CRAFTED<span>●</span>BEHEER</span>
+  <nav class="pillnav"><a href="/" target="_blank">Bekijk shop ↗</a><a href="#" id="logout" hidden>Uitloggen</a></nav>
+</div></header>
+<main class="wrap" style="padding-bottom:64px">
+  <form id="login" class="card" style="max-width:420px;margin:56px auto;display:flex;flex-direction:column;gap:16px">
+    <h1 class="display" style="font-size:30px">Inloggen</h1>
+    <label class="field">Wachtwoord<input type="password" name="pw" autocomplete="current-password" required></label>
+    <p class="error" id="loginErr" role="alert"></p>
+    <button class="btn primary block">Inloggen</button>
+  </form>
+
+  <div id="app" hidden>
+    <div class="tabs" role="tablist">
+      <button role="tab" data-tab="orders" aria-selected="true">Bestellingen</button>
+      <button role="tab" data-tab="products" aria-selected="false">Producten</button>
+      <button role="tab" data-tab="settings" aria-selected="false">Instellingen</button>
+    </div>
+    <section id="tab-orders"></section>
+    <section id="tab-products" hidden></section>
+    <section id="tab-settings" hidden></section>
+  </div>
+</main>
+<script src="/common.js"></script>
+<script>
+const { esc, euro } = CB;
+let PW = sessionStorage.getItem('cbtl-pw') || '';
+let data = { orders: [], products: [], settings: null }, ofilter = 'open', editing = null;
+
+const admin = (action, extra = {}) => CB.api('/api/admin', { method: 'POST', headers: { 'x-admin-password': PW }, body: JSON.stringify({ action, ...extra }) });
+function toast(msg) { const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg; document.body.append(t); setTimeout(() => t.remove(), 2600); }
+const rid = () => Math.random().toString(36).slice(2, 10);
+const price = (c) => (c / 100).toFixed(2).replace('.', ',');
+
+// ---- Login ------------------------------------------------------------------
+document.getElementById('login').onsubmit = async (e) => {
+  e.preventDefault(); PW = e.target.pw.value;
+  try { await start(); sessionStorage.setItem('cbtl-pw', PW); }
+  catch (err) { document.getElementById('loginErr').textContent = err.message; }
+};
+document.getElementById('logout').onclick = (e) => { e.preventDefault(); sessionStorage.removeItem('cbtl-pw'); location.reload(); };
+document.querySelectorAll('[data-tab]').forEach((b) => b.onclick = () => {
+  document.querySelectorAll('[data-tab]').forEach((x) => x.setAttribute('aria-selected', x === b));
+  ['orders', 'products', 'settings'].forEach((t) => { document.getElementById('tab-' + t).hidden = t !== b.dataset.tab; });
+});
+async function start() {
+  const [o, p, s] = await Promise.all([admin('overview'), admin('products'), admin('settings')]);
+  data = { ...o, products: p.products, settings: s.settings };
+  CB.applySettings(s.settings);
+  document.getElementById('login').hidden = true; document.getElementById('app').hidden = false; document.getElementById('logout').hidden = false;
+  renderOrders(); renderProducts(); renderSettings();
+}
+if (PW) start().catch(() => { PW = ''; sessionStorage.removeItem('cbtl-pw'); });
+
+// ---- Bestellingen -------------------------------------------------------------
+const FUL = { nieuw: 'Nieuw', in_productie: 'In productie', verzonden: 'Verzonden', afgerond: 'Afgerond', geannuleerd: 'Geannuleerd' };
+const PAY = { paid: ['Betaald', 'ok'], open: ['Wacht op betaling', ''], pending: ['Wacht op betaling', ''], failed: ['Mislukt', 'err'],
+  canceled: ['Geannuleerd', 'err'], expired: ['Verlopen', 'err'], refunded: ['Terugbetaald', 'err'], charged_back: ['Chargeback', 'err'] };
+function renderOrders() {
+  const s = data.stats;
+  const paid = data.orders.filter((o) => o.counted);
+  const groups = { open: paid.filter((o) => ['nieuw', 'in_productie'].includes(o.fulfilment)), verzonden: paid.filter((o) => o.fulfilment === 'verzonden'),
+    klaar: paid.filter((o) => ['afgerond', 'geannuleerd'].includes(o.fulfilment)), onbetaald: data.orders.filter((o) => !o.counted) };
+  const list = groups[ofilter];
+  document.getElementById('tab-orders').innerHTML = `
+    <div class="kpis"><div class="kpi"><span class="muted small">Te maken / te verzenden</span><b>${s.open}</b></div>
+      <div class="kpi"><span class="muted small">Bestellingen deze maand</span><b>${s.orders_month}</b></div>
+      <div class="kpi"><span class="muted small">Omzet deze maand</span><b>${euro(s.revenue_month_cents)}</b></div>
+      <div class="kpi"><span class="muted small">Omzet totaal (incl. btw)</span><b>${euro(s.revenue_total_cents)}</b></div></div>
+    <div class="filters">${[['open', 'Te doen'], ['verzonden', 'Verzonden'], ['klaar', 'Afgerond'], ['onbetaald', 'Niet betaald']].map(([k, l]) =>
+      `<button type="button" data-of="${k}" aria-pressed="${k === ofilter}">${l} (${groups[k].length})</button>`).join('')}
+      <button type="button" id="refresh">↻ Vernieuwen</button></div>
+    <div class="olist">${list.length ? list.map(orderHtml).join('') : '<div class="empty">Niets in deze lijst.</div>'}</div>`;
+  document.querySelectorAll('[data-of]').forEach((b) => b.onclick = () => { ofilter = b.dataset.of; renderOrders(); });
+  document.getElementById('refresh').onclick = async () => { Object.assign(data, await admin('overview')); renderOrders(); toast('Bijgewerkt'); };
+  document.querySelectorAll('[data-save-order]').forEach((b) => b.onclick = () => saveOrder(b.dataset.saveOrder));
+}
+function orderHtml(o) {
+  const c = o.customer; const [pl, pc] = PAY[o.status] || [o.status, ''];
+  return `<div class="order" id="o-${o.id}">
+    <div class="l">
+      <div><span class="st ${pc}">${pl}</span>${o.counted ? `<span class="st ${o.fulfilment === 'nieuw' ? 'c' : ''}">${FUL[o.fulfilment]}</span>` : ''}</div>
+      <strong style="font-family:var(--display);font-size:17px">${esc(o.number)} · ${euro(o.total_cents)}</strong>
+      <span class="muted small">${new Date(o.created_at).toLocaleString('nl-NL', { dateStyle: 'medium', timeStyle: 'short' })}</span>
+      ${o.items.map((i) => `<div>${i.qty}× <strong>${esc(i.name)}</strong> <span class="muted">${esc([i.variant !== 'Standaard' ? i.variant : '', i.color].filter(Boolean).join(' · '))}</span>
+        ${Object.entries(i.personal || {}).map(([k, v]) => `<br><span class="muted small">${esc(k)}:</span> <span class="pers">${esc(v)}</span>`).join('')}</div>`).join('')}
+      <p class="small muted" style="margin:6px 0 0">${esc(c.name)} · <a href="mailto:${esc(c.email)}" style="color:var(--c)">${esc(c.email)}</a>${c.phone ? ' · ' + esc(c.phone) : ''}<br>
+        ${esc(c.street)} ${esc(c.house)}, ${esc(c.zip)} ${esc(c.city)}, ${c.country === 'NL' ? 'Nederland' : 'België'}</p>
+      ${c.note ? `<p class="small" style="margin:0;white-space:pre-line"><em>“${esc(c.note)}”</em></p>` : ''}
+    </div>
+    ${o.counted ? `<div class="r">
+      <label class="field">Status<select data-f="fulfilment">${Object.entries(FUL).map(([k, l]) => `<option value="${k}"${k === o.fulfilment ? ' selected' : ''}>${l}</option>`).join('')}</select></label>
+      <label class="field">Track &amp; trace (link of code)<input data-f="tracking" value="${esc(o.tracking || '')}" placeholder="https://jouw.postnl.nl/…"></label>
+      <label class="field">Interne notitie<input data-f="note" value="${esc(o.note || '')}"></label>
+      <button class="btn primary sm" data-save-order="${o.id}">Opslaan</button>
+      <span class="muted small">Zet je hem op "Verzonden", dan krijgt de klant automatisch een mail met de track &amp; trace.</span>
+    </div>` : ''}
+  </div>`;
+}
+async function saveOrder(id) {
+  const el = document.getElementById('o-' + id);
+  const v = (f) => el.querySelector(`[data-f="${f}"]`).value;
+  try {
+    const r = await admin('setFulfilment', { id, fulfilment: v('fulfilment'), tracking: v('tracking'), note: v('note') });
+    Object.assign(data, await admin('overview')); renderOrders();
+    toast(r.mailed ? 'Opgeslagen · klant is gemaild' : 'Opgeslagen');
+  } catch (e) { toast(e.message); }
+}
+
+// ---- Producten ----------------------------------------------------------------
+function renderProducts() {
+  const el = document.getElementById('tab-products');
+  if (editing) return renderEditor(el);
+  el.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap">
+      <h2 class="display" style="font-size:26px">Producten</h2><button class="btn primary sm" id="newP">+ Nieuw product</button></div>
+    ${data.products.length ? data.products.map((p) => {
+      const stock = p.variants.filter((v) => v.stock_mode === 'stock');
+      return `<div class="prow"><div class="th" style="--g:${esc(p.glow)}">${p.photos[0] ? `<img src="${esc(p.photos[0])}" alt="">` : CB.layers(8, 22, 18, 1, { small: true, glow: p.glow })}</div>
+        <div class="i"><strong>${esc(p.name)}</strong> ${p.active ? '<span class="st ok">Online</span>' : '<span class="st">Offline</span>'}${p.featured ? '<span class="st c">Uitgelicht</span>' : ''}
+          <div class="muted small">${p.variants.map((v) => `${esc(v.name)} ${euro(v.price_cents)}${v.stock_mode === 'stock' ? ` (voorraad ${v.stock})` : ''}`).join(' · ')}</div>
+          ${stock.some((v) => v.stock === 0) ? '<div class="small" style="color:var(--err)">Een uitvoering is uitverkocht</div>' : ''}</div>
+        <button class="btn sm" data-edit="${p.id}">Bewerken</button></div>`;
+    }).join('') : '<div class="empty">Nog geen producten. Maak je eerste product aan.</div>'}`;
+  document.getElementById('newP').onclick = () => {
+    editing = { name: '', category: '', description: '', photos: [], glow: data.settings.accent || '#FFB000', active: false, featured: false, position: data.products.length,
+      variants: [{ id: rid(), name: 'Standaard', price: '', stock_mode: 'order', stock: 0, lead_time: '3-5 werkdagen' }], colors: [], fields: [] };
+    renderProducts();
+  };
+  el.querySelectorAll('[data-edit]').forEach((b) => b.onclick = () => {
+    const p = data.products.find((x) => x.id === b.dataset.edit);
+    editing = JSON.parse(JSON.stringify({ ...p, variants: p.variants.map((v) => ({ ...v, price: price(v.price_cents) })) }));
+    renderProducts();
+  });
+}
+
+function renderEditor(el) {
+  const p = editing;
+  el.innerHTML = `<div class="ed">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+      <h2 class="display" style="font-size:26px">${p.id ? 'Product bewerken' : 'Nieuw product'}</h2>
+      <div class="actions"><button class="btn sm" id="cancel">Annuleren</button><button class="btn primary sm" id="save">Opslaan</button></div></div>
+    <div class="card ed">
+      <div class="grid2"><label class="field">Naam<input data-k="name" value="${esc(p.name)}" required></label>
+        <label class="field">Categorie (bijv. Woonaccessoires)<input data-k="category" value="${esc(p.category || '')}" list="cats"></label></div>
+      <datalist id="cats">${[...new Set(data.products.map((x) => x.category).filter(Boolean))].map((c) => `<option value="${esc(c)}">`).join('')}</datalist>
+      <label class="field">Omschrijving<textarea data-k="description" rows="4">${esc(p.description || '')}</textarea></label>
+      <div class="grid2" style="align-items:end">
+        <label class="switch"><input type="checkbox" data-k="active"${p.active ? ' checked' : ''}> Online in de shop</label>
+        <label class="switch"><input type="checkbox" data-k="featured"${p.featured ? ' checked' : ''}> Uitlichten op de homepage</label>
+        <label class="field">Gloedkleur (zonder foto)<input type="color" data-k="glow" value="${esc(p.glow)}" style="padding:4px;min-height:44px"></label>
+        <label class="field">Volgorde (laag = eerst)<input type="number" data-k="position" value="${p.position || 0}"></label>
+      </div>
+    </div>
+
+    <div class="sub"><span class="opt-label">Foto's (eerste = hoofdfoto)</span>
+      <div class="photos">${p.photos.map((u, i) => `<div class="ph"><img src="${esc(u)}" alt="">${i ? `<button type="button" class="mv" data-first="${i}" title="Maak hoofdfoto" aria-label="Maak hoofdfoto">★</button>` : ''}<button type="button" data-rmph="${i}" aria-label="Verwijder foto">✕</button></div>`).join('')}
+        <label class="drop">+ Foto's<br>toevoegen<input type="file" accept="image/*" multiple id="upl" hidden></label></div>
+      <span class="muted small" id="uplMsg"></span></div>
+
+    <div class="sub"><span class="opt-label">Uitvoeringen &amp; prijzen</span>
+      <span class="muted small">Per uitvoering een eigen prijs (incl. btw). Kies "Op voorraad" met een aantal, of "Op bestelling" met een levertijd.</span>
+      ${p.variants.map((v, i) => `<div class="vrow" data-v="${i}">
+        <label class="field">Naam<input data-vk="name" value="${esc(v.name)}"></label>
+        <label class="field">Prijs €<input data-vk="price" inputmode="decimal" value="${esc(v.price)}" placeholder="24,95"></label>
+        <label class="field">Type<select data-vk="stock_mode"><option value="order"${v.stock_mode !== 'stock' ? ' selected' : ''}>Op bestelling</option><option value="stock"${v.stock_mode === 'stock' ? ' selected' : ''}>Op voorraad</option></select></label>
+        <label class="field">Voorraad<input type="number" min="0" data-vk="stock" value="${v.stock ?? 0}"${v.stock_mode === 'stock' ? '' : ' disabled'}></label>
+        <label class="field">${v.stock_mode === 'stock' ? 'Verzonden binnen' : 'Levertijd'}<input data-vk="lead_time" value="${esc(v.lead_time || '')}" placeholder="${v.stock_mode === 'stock' ? '1-2 werkdagen' : '3-5 werkdagen'}"></label>
+        <button type="button" class="x" data-rmv="${i}" aria-label="Verwijder uitvoering"${p.variants.length < 2 ? ' disabled' : ''}>✕</button></div>`).join('')}
+      <button type="button" class="btn sm" id="addV" style="align-self:flex-start">+ Uitvoering (bijv. maat)</button></div>
+
+    <div class="sub"><span class="opt-label">Kleuren</span>
+      <span class="muted small">Laat leeg als er geen kleurkeuze is. Bij één kleur wordt die automatisch gekozen.</span>
+      ${p.colors.map((c, i) => `<div class="crow" data-c="${i}"><label class="field">Naam<input data-ck="name" value="${esc(c.name)}" placeholder="Zwart"></label>
+        <label class="field">Kleur<input type="color" data-ck="hex" value="${esc(c.hex)}" style="padding:4px;min-height:44px"></label>
+        <button type="button" class="x" data-rmc="${i}" aria-label="Verwijder kleur">✕</button></div>`).join('')}
+      <button type="button" class="btn sm" id="addC" style="align-self:flex-start">+ Kleur</button></div>
+
+    <div class="sub"><span class="opt-label">Personalisatie</span>
+      <span class="muted small">Bijv. "Naam" of "Tekst". Een <strong style="color:var(--text)">verplicht</strong> veld maakt het product gepersonaliseerd: dan geldt er geen retourrecht en moet de klant dat bevestigen.</span>
+      ${p.fields.map((f, i) => `<div class="frow" data-fi="${i}"><label class="field">Label<input data-fk="label" value="${esc(f.label)}" placeholder="Naam"></label>
+        <label class="field">Max. tekens<input type="number" min="1" max="200" data-fk="max" value="${f.max || 20}"></label>
+        <label class="switch" style="min-height:44px"><input type="checkbox" data-fk="required"${f.required ? ' checked' : ''}> Verplicht</label>
+        <button type="button" class="x" data-rmf="${i}" aria-label="Verwijder veld">✕</button></div>`).join('')}
+      <button type="button" class="btn sm" id="addF" style="align-self:flex-start">+ Personalisatieveld</button></div>
+
+    <p class="error" id="edErr" role="alert"></p>
+    <div class="actions">${p.id ? `<button class="btn sm" id="del" style="color:var(--err);border-color:var(--err)">Product verwijderen</button>` : ''}
+      ${p.id && p.active ? `<a class="btn sm" href="/p/${encodeURIComponent(p.slug)}" target="_blank">Bekijk in de shop ↗</a>` : ''}</div>
+  </div>`;
+
+  const read = () => {
+    el.querySelectorAll('[data-k]').forEach((i) => { p[i.dataset.k] = i.type === 'checkbox' ? i.checked : i.value; });
+    el.querySelectorAll('[data-v]').forEach((r) => { const v = p.variants[r.dataset.v]; r.querySelectorAll('[data-vk]').forEach((i) => { v[i.dataset.vk] = i.value; }); });
+    el.querySelectorAll('[data-c]').forEach((r) => { const c = p.colors[r.dataset.c]; r.querySelectorAll('[data-ck]').forEach((i) => { c[i.dataset.ck] = i.value; }); });
+    el.querySelectorAll('[data-fi]').forEach((r) => { const f = p.fields[r.dataset.fi]; r.querySelectorAll('[data-fk]').forEach((i) => { f[i.dataset.fk] = i.type === 'checkbox' ? i.checked : i.value; }); });
+  };
+  const rerender = () => { read(); renderEditor(el); };
+  el.querySelectorAll('[data-vk="stock_mode"]').forEach((s) => s.onchange = rerender);
+  document.getElementById('addV').onclick = () => { read(); p.variants.push({ id: rid(), name: '', price: '', stock_mode: 'order', stock: 0, lead_time: '' }); renderEditor(el); };
+  document.getElementById('addC').onclick = () => { read(); p.colors.push({ name: '', hex: '#FFFFFF' }); renderEditor(el); };
+  document.getElementById('addF').onclick = () => { read(); p.fields.push({ id: rid(), label: 'Naam', max: 12, required: true }); renderEditor(el); };
+  el.querySelectorAll('[data-rmv]').forEach((b) => b.onclick = () => { read(); p.variants.splice(b.dataset.rmv, 1); renderEditor(el); });
+  el.querySelectorAll('[data-rmc]').forEach((b) => b.onclick = () => { read(); p.colors.splice(b.dataset.rmc, 1); renderEditor(el); });
+  el.querySelectorAll('[data-rmf]').forEach((b) => b.onclick = () => { read(); p.fields.splice(b.dataset.rmf, 1); renderEditor(el); });
+  el.querySelectorAll('[data-rmph]').forEach((b) => b.onclick = () => { read(); p.photos.splice(b.dataset.rmph, 1); renderEditor(el); });
+  el.querySelectorAll('[data-first]').forEach((b) => b.onclick = () => { read(); const [u] = p.photos.splice(b.dataset.first, 1); p.photos.unshift(u); renderEditor(el); });
+  document.getElementById('upl').onchange = async (e) => {
+    read(); const msg = document.getElementById('uplMsg');
+    for (const file of e.target.files) {
+      msg.textContent = `Uploaden: ${file.name}…`;
+      try { const { url } = await admin('upload', { data: await shrink(file) }); p.photos.push(url); }
+      catch (err) { toast(err.message); }
+    }
+    renderEditor(el);
+  };
+  document.getElementById('cancel').onclick = () => { editing = null; renderProducts(); };
+  document.getElementById('save').onclick = async () => {
+    read();
+    try {
+      await admin('saveProduct', { product: p });
+      data.products = (await admin('products')).products; editing = null; renderProducts(); toast('Product opgeslagen');
+    } catch (err) { document.getElementById('edErr').textContent = err.message; }
+  };
+  const del = document.getElementById('del');
+  if (del) del.onclick = async () => {
+    if (!confirm(`"${p.name}" definitief verwijderen? Oude bestellingen blijven bewaard.`)) return;
+    await admin('deleteProduct', { id: p.id }); data.products = (await admin('products')).products; editing = null; renderProducts(); toast('Verwijderd');
+  };
+}
+
+// Foto in de browser verkleinen tot max 1600 px (JPEG) zodat de upload klein en snel is.
+function shrink(file) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      const s = Math.min(1, 1600 / Math.max(img.width, img.height));
+      const c = document.createElement('canvas'); c.width = Math.round(img.width * s); c.height = Math.round(img.height * s);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(img.src); resolve(c.toDataURL('image/jpeg', 0.86));
+    };
+    img.onerror = () => reject(new Error('Deze foto kon niet worden gelezen.'));
+    img.src = URL.createObjectURL(file);
+  });
+}
+
+// ---- Instellingen -------------------------------------------------------------
+function renderSettings() {
+  const s = data.settings; const b = s.business || {};
+  const el = document.getElementById('tab-settings');
+  el.innerHTML = `<form id="sf" class="ed" style="max-width:820px">
+    <div class="card ed"><h2 class="display" style="font-size:22px">Shop</h2>
+      <label class="switch"><input type="checkbox" name="shop_open"${s.shop_open !== false ? ' checked' : ''}> Shop open voor bestellingen</label>
+      <div class="grid2"><label class="field">Verzendkosten Nederland €<input name="shipping_nl" inputmode="decimal" value="${price(s.shipping_nl)}"></label>
+        <label class="field">Verzendkosten België €<input name="shipping_be" inputmode="decimal" value="${price(s.shipping_be)}"></label>
+        <label class="field">Btw-tarief %<input name="vat_rate" type="number" min="0" max="30" value="${s.vat_rate}"></label>
+        <label class="field">Accentkleur<input name="accent" type="color" value="${esc(s.accent)}" style="padding:4px"></label></div>
+      <label class="field">Tekst in de lopende band<input name="announcement" value="${esc(s.announcement || '')}"></label>
+      <label class="field">Meldingen van nieuwe bestellingen naar<input name="notify_email" type="email" value="${esc(s.notify_email || '')}"></label></div>
+    <div class="card ed"><h2 class="display" style="font-size:22px">Bedrijfsgegevens</h2>
+      <span class="muted small">Verplicht voor een webshop; staan in de voorwaarden en onder elke mail.</span>
+      <div class="grid2">${[['name', 'Bedrijfsnaam'], ['address', 'Adres'], ['email', 'E-mail'], ['phone', 'Telefoon'], ['kvk', 'KvK-nummer'], ['vat_id', 'Btw-identificatienummer']]
+        .map(([k, l]) => `<label class="field">${l}<input name="b_${k}" value="${esc(b[k] || '')}"></label>`).join('')}</div></div>
+    <button class="btn primary" style="align-self:flex-start">Instellingen opslaan</button></form>`;
+  document.getElementById('sf').onsubmit = async (e) => {
+    e.preventDefault(); const f = e.target;
+    const settings = { shop_open: f.shop_open.checked, shipping_nl: f.shipping_nl.value, shipping_be: f.shipping_be.value, vat_rate: f.vat_rate.value,
+      accent: f.accent.value, announcement: f.announcement.value, notify_email: f.notify_email.value,
+      business: Object.fromEntries(['name', 'address', 'email', 'phone', 'kvk', 'vat_id'].map((k) => [k, f['b_' + k].value])) };
+    try { await admin('saveSettings', { settings }); data.settings = (await admin('settings')).settings; CB.applySettings(data.settings); toast('Instellingen opgeslagen'); }
+    catch (err) { toast(err.message); }
+  };
+}
+</script>
+</body>
+</html>

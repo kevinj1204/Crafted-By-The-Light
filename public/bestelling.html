@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Je bestelling – Crafted By The Light</title>
+<meta name="theme-color" content="#06060A">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<main class="wrap" style="padding-top:48px;max-width:820px">
+  <div id="root"><div class="empty">Je bestelling wordt geladen…</div></div>
+</main>
+<script src="/common.js"></script>
+<script>
+CB.chrome('');
+const { esc, euro } = CB;
+const q = new URLSearchParams(location.search);
+let tries = 0;
+const STEPS = [['nieuw', 'Ontvangen'], ['in_productie', 'Aan het printen'], ['verzonden', 'Onderweg'], ['afgerond', 'Bezorgd']];
+
+function render(o) {
+  const paid = o.status === 'paid';
+  const pending = ['open', 'pending', 'authorized'].includes(o.status);
+  if (paid) CB.cart.set([]);
+  const step = STEPS.findIndex(([k]) => k === o.fulfilment);
+  const head = paid
+    ? `<p class="eyebrow">Bestelling ${esc(o.number)}</p><h1 class="display" style="font-size:clamp(40px,6vw,72px)">Bedankt${o.first_name ? ', ' + esc(o.first_name) : ''}!</h1>
+       <p class="muted" style="font-size:18px;margin:0">Je betaling is gelukt. Je krijgt een bevestiging per mail, en nog een mail met track &amp; trace zodra je pakket onderweg is.</p>`
+    : pending
+    ? `<p class="eyebrow pulse">Bestelling ${esc(o.number)}</p><h1 class="display" style="font-size:clamp(36px,5vw,60px)">Betaling wordt verwerkt…</h1>
+       <p class="muted" style="margin:0">Dit duurt meestal maar een paar seconden. Deze pagina ververst vanzelf.</p>`
+    : `<p class="eyebrow">Bestelling ${esc(o.number)}</p><h1 class="display" style="font-size:clamp(36px,5vw,60px)">Betaling niet gelukt</h1>
+       <p class="muted" style="margin:0">De betaling is ${o.status === 'canceled' ? 'geannuleerd' : o.status === 'expired' ? 'verlopen' : 'niet afgerond'}. Er is niets afgeschreven. Je mand staat nog klaar.</p>
+       <a class="btn primary" href="/mand" style="align-self:flex-start">Terug naar je mand</a>`;
+  document.getElementById('root').innerHTML = `<div style="display:flex;flex-direction:column;gap:20px">${head}
+    ${paid ? `<div class="card" style="display:flex;flex-wrap:wrap;gap:8px">${STEPS.map(([k, l], i) => `<div style="flex:1 1 140px;padding:12px 14px;border-radius:16px;border:1px solid ${i <= step ? 'var(--c)' : 'var(--line)'};${i === step ? 'box-shadow:0 0 24px color-mix(in srgb,var(--c) 30%,transparent);' : ''}color:${i <= step ? 'var(--text)' : 'var(--faint)'};font-weight:600;font-size:14px">${i < step ? '✓ ' : i === step ? '● ' : ''}${l}</div>`).join('')}
+      ${o.tracking ? `<p style="width:100%;margin:8px 0 0">Track &amp; trace: ${/^https?:/i.test(o.tracking) ? `<a href="${esc(o.tracking)}" style="color:var(--c)">${esc(o.tracking)}</a>` : `<strong>${esc(o.tracking)}</strong>`}</p>` : ''}</div>` : ''}
+    <div class="card" style="display:flex;flex-direction:column;gap:12px">
+      ${o.items.map((i) => `<div class="sumrow" style="color:var(--text)"><span>${i.qty}× ${esc(i.name)}<br><span class="muted small">${esc([i.variant !== 'Standaard' ? i.variant : '', i.color, ...Object.entries(i.personal || {}).map(([k, v]) => `${k}: “${v}”`)].filter(Boolean).join(' · '))}</span></span><span>${euro(i.unit_cents * i.qty)}</span></div>`).join('')}
+      <div class="sumrow"><span>Verzending ${o.country === 'NL' ? 'Nederland' : 'België'}</span><span>${euro(o.shipping_cents)}</span></div>
+      <div class="sumrow total"><span>Totaal</span><span>${euro(o.total_cents)}</span></div>
+      <div class="sumrow small"><span>Waarvan btw</span><span>${euro(o.vat_cents)}</span></div>
+    </div>
+    <a href="/shop" style="color:var(--c)">← Verder winkelen</a></div>`;
+  if (pending && tries++ < 20) setTimeout(load, 3000);
+}
+function load() {
+  CB.api(`/api/order?o=${encodeURIComponent(q.get('o') || '')}&t=${encodeURIComponent(q.get('t') || '')}`).then(render)
+    .catch((e) => { document.getElementById('root').innerHTML = `<div class="empty">${esc(e.message)}</div>`; });
+}
+CB.api('/api/public').then((r) => CB.applySettings(r.settings)).catch(() => {});
+load();
+</script>
+</body>
+</html>
