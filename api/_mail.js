@@ -40,8 +40,8 @@ export function itemsTable(order) {
   }).join('');
   return `<table style="width:100%;border-collapse:collapse;font-size:14px;color:#D6D3E0">${rows}
     <tr><td></td><td style="padding:8px 12px 2px 0;border-top:1px solid #262633">Verzending (${order.country === 'NL' ? 'Nederland' : 'België'})</td><td style="padding:8px 0 2px;text-align:right;border-top:1px solid #262633">${euroNl(order.shipping_cents)}</td></tr>
-    <tr><td></td><td style="padding:6px 12px 2px 0"><strong style="color:#F4F1EA">Totaal</strong></td><td style="padding:6px 0 2px;text-align:right"><strong style="color:#F4F1EA">${euroNl(order.total_cents)}</strong></td></tr>
-    <tr><td></td><td style="padding:2px 12px 0 0;color:#8B889A;font-size:12px">Waarvan btw</td><td style="padding:2px 0 0;text-align:right;color:#8B889A;font-size:12px">${euroNl(order.vat_cents)}</td></tr>
+    <tr><td></td><td style="padding:6px 12px 2px 0"><strong style="color:#F4F1EA">Totaal incl. btw</strong></td><td style="padding:6px 0 2px;text-align:right"><strong style="color:#F4F1EA">${euroNl(order.total_cents)}</strong></td></tr>
+    <tr><td></td><td style="padding:2px 12px 0 0;color:#8B889A;font-size:12px">Hierin zit btw</td><td style="padding:2px 0 0;text-align:right;color:#8B889A;font-size:12px">${euroNl(order.vat_cents)}</td></tr>
   </table>`;
 }
 

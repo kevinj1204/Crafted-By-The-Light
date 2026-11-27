@@ -31,7 +31,7 @@ function lineHtml(i, idx) {
       ${i.problem ? `<span class="error">${esc(i.problem)}</span>` : ''}
       <div style="display:flex;align-items:center;gap:14px;margin-top:6px;flex-wrap:wrap">
         <div class="qty" style="transform:scale(.85);transform-origin:left"><button type="button" data-q="${idx}:-1" aria-label="Minder">−</button><span>${i.qty}</span><button type="button" data-q="${idx}:1" aria-label="Meer">+</button></div>
-        <strong>${euro(i.unit_cents * i.qty)}</strong></div></div>
+        <strong>${euro(i.unit_cents * i.qty)}</strong><span class="muted small">incl. btw</span></div></div>
     <button class="x" type="button" data-rm="${idx}" aria-label="Verwijder ${esc(i.name)}">✕</button></div>`;
 }
 
@@ -73,10 +73,11 @@ function render() {
     </div>
     <aside class="summary card" aria-label="Overzicht">
       <h2 class="display" style="font-size:24px">Overzicht</h2>
-      <div class="sumrow"><span>Subtotaal</span><span>${euro(subtotal)}</span></div>
-      <div class="sumrow"><span>Verzending ${country === 'NL' ? 'Nederland' : 'België'}</span><span>${euro(ship)}</span></div>
-      <div class="sumrow total"><span>Totaal</span><span>${euro(total)}</span></div>
-      <div class="sumrow small"><span>Waarvan ${settings.vat_rate}% btw</span><span>${euro(vat)}</span></div>
+      <div class="sumrow"><span>Producten (incl. btw)</span><span>${euro(subtotal)}</span></div>
+      <div class="sumrow"><span>Verzending ${country === 'NL' ? 'Nederland' : 'België'} (incl. btw)</span><span>${euro(ship)}</span></div>
+      <div class="sumrow total"><span>Totaal incl. btw</span><span>${euro(total)}</span></div>
+      <div class="sumrow small"><span>Hierin zit ${settings.vat_rate}% btw</span><span>${euro(vat)}</span></div>
+      <p class="muted small" style="margin:0">Alle prijzen zijn inclusief btw. Wat je hier ziet, is wat je betaalt.</p>
       <label class="check"><input type="checkbox" id="terms"${form.terms ? ' checked' : ''}> <span>Ik ga akkoord met de <a href="/voorwaarden" target="_blank" style="color:var(--c)">algemene voorwaarden</a> en de <a href="/privacy" target="_blank" style="color:var(--c)">privacyverklaring</a>.</span></label>
       ${anyNoReturn ? `<label class="check"><input type="checkbox" id="noret"${form.noret ? ' checked' : ''}> <span>Ik begrijp dat <strong style="color:var(--text)">gepersonaliseerde producten</strong> speciaal voor mij worden gemaakt en <strong style="color:var(--text)">niet geretourneerd</strong> kunnen worden. Mijn tekst is correct.</span></label>` : ''}
       <p class="error" id="err" role="alert"></p>

@@ -42,8 +42,8 @@ function render(o) {
     <div class="card" style="display:flex;flex-direction:column;gap:12px">
       ${o.items.map((i) => `<div class="sumrow" style="color:var(--text)"><span>${i.qty}× ${esc(i.name)}<br><span class="muted small">${esc([i.variant !== 'Standaard' ? i.variant : '', i.color, ...Object.entries(i.personal || {}).map(([k, v]) => `${k}: “${v}”`)].filter(Boolean).join(' · '))}</span></span><span>${euro(i.unit_cents * i.qty)}</span></div>`).join('')}
       <div class="sumrow"><span>Verzending ${o.country === 'NL' ? 'Nederland' : 'België'}</span><span>${euro(o.shipping_cents)}</span></div>
-      <div class="sumrow total"><span>Totaal</span><span>${euro(o.total_cents)}</span></div>
-      <div class="sumrow small"><span>Waarvan btw</span><span>${euro(o.vat_cents)}</span></div>
+      <div class="sumrow total"><span>Totaal incl. btw</span><span>${euro(o.total_cents)}</span></div>
+      <div class="sumrow small"><span>Hierin zit btw</span><span>${euro(o.vat_cents)}</span></div>
     </div>
     <a href="/shop" style="color:var(--c)">← Verder winkelen</a></div>`;
   if (pending && tries++ < 20) setTimeout(load, 3000);

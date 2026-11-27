@@ -54,7 +54,7 @@ window.CB = (() => {
         ${p.photos[0] ? `<img src="${esc(p.photos[0])}" alt="" loading="lazy">` : layers(s.n, s.base, s.amp, s.f, { small: true, glow: p.glow })}</div>
       <div class="meta"><div style="display:flex;flex-direction:column;gap:4px;min-width:0"><span class="name">${esc(p.name)}</span>
         <span class="muted small">${esc(cardMeta(p))}</span></div>
-        ${p.from_cents != null ? `<span class="price-pill">${p.variants.length > 1 && new Set(p.variants.map((v) => v.price_cents)).size > 1 ? 'v.a. ' : ''}${euro(p.from_cents)}</span>` : ''}</div>
+        ${p.from_cents != null ? `<span style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex:none"><span class="price-pill">${p.variants.length > 1 && new Set(p.variants.map((v) => v.price_cents)).size > 1 ? 'v.a. ' : ''}${euro(p.from_cents)}</span><span class="muted" style="font-size:11px">incl. btw</span></span>` : ''}</div>
     </a>`;
   }
   function cardMeta(p) {
